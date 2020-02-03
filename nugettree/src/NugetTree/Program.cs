@@ -11,71 +11,82 @@ namespace NugetTree
     {
         static void Main()
         {
+            //--------------------------------------------------------------------------------------------------------------
             #region EnterRepository
 
-            string repoFolder = string.Empty;
+            var userInput = new UserInput();
             do
             {
-                repoFolder = GetSolutionPath(repoFolder);
-            } while (string.IsNullOrEmpty(repoFolder));
+                userInput.RepoFolder = GetSolutionPath(userInput.RepoFolder);
+
+            } while (string.IsNullOrEmpty(userInput.RepoFolder));
 
             #endregion EnterRepository
-
+            //--------------------------------------------------------------------------------------------------------------
             #region EnterFramework
 
-            string targetFramework = string.Empty;
             do
             {
-                targetFramework = GetFrameworkVersion(targetFramework);
-                if (!string.IsNullOrEmpty(targetFramework))
+                userInput.TargetFramework = GetFrameworkVersion(userInput.TargetFramework);
+                if (!string.IsNullOrEmpty(userInput.TargetFramework))
                 {
-                    var frameworkVersion = new FrameworkName(targetFramework);
+                    userInput.FrameworkName = new FrameworkName(userInput.TargetFramework);
                 }
 
-            } while (string.IsNullOrEmpty(targetFramework));
+            } while (string.IsNullOrEmpty(userInput.TargetFramework));
 
             #endregion EnterFramework
-
+            //--------------------------------------------------------------------------------------------------------------
             #region EnterPackageSource
 
-            string nugetRepo = string.Empty;
             do
             {
-                nugetRepo = GetRepoPath(nugetRepo);
-                if (!string.IsNullOrEmpty(nugetRepo))
+                userInput.PackageSource = GetRepoPath(userInput.PackageSource);
+                if (!string.IsNullOrEmpty(userInput.PackageSource))
                 {
-                    var nugetRepoFactory = PackageRepositoryFactory.Default.CreateRepository(nugetRepo);
+                    userInput.NugetRepoFactory = PackageRepositoryFactory.Default.CreateRepository(userInput.PackageSource);
                 }
-            } while (string.IsNullOrEmpty(nugetRepo));
+
+            } while (string.IsNullOrEmpty(userInput.PackageSource));
 
             #endregion EnterPackageSource
+            //--------------------------------------------------------------------------------------------------------------
+            #region Results
 
-            
-            var answer = new FindDependencies(repoFolder, nugetRepo).ListAll();
+            userInput.Dependencies = new FindDependencies(userInput.RepoFolder, userInput.NugetRepoFactory).ListAll();
 
-            foreach (var item in answer)
+            foreach (var item in userInput.Dependencies)
             {
                 Console.WriteLine();
                 Console.WriteLine("--------------------------------------");
                 Console.WriteLine(item.Project);
 
-                OutputGraph(nugetRepo, item.Packages, targetFramework, item.LatestVersion, 0);
+                OutputGraph(userInput.NugetRepoFactory, item.Packages, userInput.FrameworkName, item.LatestVersion, 0);
             }
 
             Console.WriteLine("Press any key to exit");
             Console.ReadKey();
+
+            #endregion Results
+
         }
 
-        private static string GetRepoPath(string nugetRepo)
+        private static string GetRepoPath(string packageSource)
         {
             FontColour.ColourChangeDisplay("----------------------");
-            Console.WriteLine("Enter a package source url");
+            Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org");
             Console.WriteLine("----------------------");
 
             FontColour.ColourChangeResult();
-            nugetRepo = Console.ReadLine();
+            packageSource = Console.ReadLine();
 
-            return Validation.UriExists(nugetRepo);
+            // If empty use default nuget.org package source
+            if (string.IsNullOrEmpty(packageSource))
+            {
+                packageSource = @"https://api.nuget.org/v3/index.json";
+            }
+
+            return Validation.UriExists(packageSource);
         }
 
         private static string GetFrameworkVersion(string targetFramework)
