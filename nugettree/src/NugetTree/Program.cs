@@ -15,6 +15,7 @@ namespace NugetTree
             #region EnterRepository
 
             var userInput = new UserInput();
+            var apiProperty = new ApiProperties();
             do
             {
                 userInput.RepoFolder = GetSolutionPath(userInput.RepoFolder);
@@ -30,7 +31,7 @@ namespace NugetTree
                 userInput.TargetFramework = GetFrameworkVersion(userInput.TargetFramework);
                 if (!string.IsNullOrEmpty(userInput.TargetFramework))
                 {
-                    userInput.FrameworkName = new FrameworkName(userInput.TargetFramework);
+                    apiProperty.FrameworkName = new FrameworkName(userInput.TargetFramework);
                 }
 
             } while (string.IsNullOrEmpty(userInput.TargetFramework));
@@ -44,24 +45,30 @@ namespace NugetTree
                 userInput.PackageSource = GetRepoPath(userInput.PackageSource);
                 if (!string.IsNullOrEmpty(userInput.PackageSource))
                 {
-                    userInput.NugetRepoFactory = PackageRepositoryFactory.Default.CreateRepository(userInput.PackageSource);
+                    apiProperty.NugetRepoFactory = PackageRepositoryFactory.Default.CreateRepository(userInput.PackageSource);
+                    apiProperty.Dependencies = new FindDependencies(userInput.RepoFolder, apiProperty.NugetRepoFactory).ListAll();
+                }
+                else
+                {
+                    // Use latest nuget source v3
+                    apiProperty.NugetPackageSource = new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json");
                 }
 
-            } while (string.IsNullOrEmpty(userInput.PackageSource));
+            } while (string.IsNullOrEmpty(userInput.PackageSource && apiProperty.NugetPackageSource != null));
 
             #endregion EnterPackageSource
             //--------------------------------------------------------------------------------------------------------------
             #region Results
 
-            userInput.Dependencies = new FindDependencies(userInput.RepoFolder, userInput.NugetRepoFactory).ListAll();
+            
 
-            foreach (var item in userInput.Dependencies)
+            foreach (var item in apiProperty.Dependencies)
             {
                 Console.WriteLine();
                 Console.WriteLine("--------------------------------------");
                 Console.WriteLine(item.Project);
 
-                OutputGraph(userInput.NugetRepoFactory, item.Packages, userInput.FrameworkName, item.LatestVersion, 0);
+                OutputGraph(apiProperty.NugetRepoFactory, item.Packages, apiProperty.FrameworkName, item.LatestVersion, 0);
             }
 
             Console.WriteLine("Press any key to exit");
@@ -69,36 +76,6 @@ namespace NugetTree
 
             #endregion Results
 
-        }
-
-        private static string GetRepoPath(string packageSource)
-        {
-            FontColour.ColourChangeDisplay("----------------------");
-            Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org");
-            Console.WriteLine("----------------------");
-
-            FontColour.ColourChangeResult();
-            packageSource = Console.ReadLine();
-
-            // If empty use default nuget.org package source
-            if (string.IsNullOrEmpty(packageSource))
-            {
-                packageSource = @"https://api.nuget.org/v3/index.json";
-            }
-
-            return Validation.UriExists(packageSource);
-        }
-
-        private static string GetFrameworkVersion(string targetFramework)
-        {
-            FontColour.ColourChangeDisplay("----------------------");
-            Console.WriteLine("Enter a .NET Framework version number");
-            Console.WriteLine("----------------------");
-
-            FontColour.ColourChangeResult();
-            targetFramework = Console.ReadLine();
-
-            return Validation.RegexExists(targetFramework);
         }
 
         private static string GetSolutionPath(string repoFolder)
@@ -113,15 +90,32 @@ namespace NugetTree
             return Validation.DirectorExists(repoFolder);
         }
 
-        private static SemanticVersion fontColor(SemanticVersion version)
+        private static string GetRepoPath(string packageSource)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            return version;
+            FontColour.ColourChangeDisplay("----------------------");
+            Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org V3");
+            Console.WriteLine("----------------------");
+
+            FontColour.ColourChangeResult();
+            packageSource = Console.ReadLine();
+
+            packageSource = Validation.UriExists(packageSource);
+            Console.WriteLine(packageSource);
+            return packageSource;
         }
 
-        private static void normalColor()
+        private static string GetFrameworkVersion(string targetFramework)
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
+            FontColour.ColourChangeDisplay("----------------------");
+            Console.WriteLine("Enter a .NET Framework version number");
+            Console.WriteLine("----------------------");
+
+            FontColour.ColourChangeResult();
+            targetFramework = Console.ReadLine();
+
+            targetFramework = Validation.RegexExists(targetFramework);
+            Console.WriteLine(targetFramework);
+            return targetFramework;
         }
 
         static void OutputGraph(IPackageRepository repository, IEnumerable<IPackage> packages, FrameworkName targetFramework, List<IPackage> latestVersion, int depth)
@@ -132,14 +126,14 @@ namespace NugetTree
                 {
                     foreach (var list in latestVersion.Where(x => x.Id == package.Id))
                     {
-                        fontColor(list.Version);
-                        Console.WriteLine("{0}{1} v{2} | Latest Package:{3} | {4} v{5}", new string(' ', depth), package.Id, package.Version, package.IsLatestVersion, list.Id, list.Version);
-                        normalColor();
+                        FontColour.NugetColor(list.Version);
+                        Console.WriteLine($"{new string(' ', depth)}{package.Id} v{package.Version} | Latest Package:{package.IsLatestVersion} | {list.Id} v{list.Version}");
+                        FontColour.NormalColor();
                     }
                 }
                 else
                 {
-                    Console.WriteLine("{0}{1} v{2} Latest Package:{3}", new string(' ', depth), package.Id, package.Version, package.IsLatestVersion);
+                    Console.WriteLine($"{new string(' ', depth)}{package.Id} v{package.Version} Latest Package:{package.IsLatestVersion}");
                 }
 
 

@@ -1,6 +1,7 @@
 ﻿
 namespace NugetTree.Font
 {
+    using NuGet;
     using System;
     public static class FontColour
     {
@@ -19,6 +20,17 @@ namespace NugetTree.Font
         public static void ColourChangeResult()
         {
             Console.ForegroundColor = ConsoleColor.Green;
+        }
+
+        public static SemanticVersion NugetColor(SemanticVersion version)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            return version;
+        }
+
+        public static void NormalColor()
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
 }

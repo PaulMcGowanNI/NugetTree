@@ -28,7 +28,7 @@ namespace NugetTree
             return Search(true, string.Empty, searchContains, string.Empty, false);
         }
 
-        public List<PackageSummaries> Search(bool showEmptyResults, string searchStartsWith, string searchContains, string searchEndsWith, bool onlyShowInvalidSemanticVersions)
+        public List<PackageSummaries> Search( bool showEmptyResults, string searchStartsWith, string searchContains, string searchEndsWith, bool onlyShowInvalidSemanticVersions)
         {
             var projects = new List<PackageSummaries>();
             var folders = Directory.EnumerateDirectories(_localFolderPath).Where(f => !f.StartsWith("."));
@@ -38,73 +38,7 @@ namespace NugetTree
                 folders = new[] { _localFolderPath };
             }
 
-            foreach (var folder in folders)
-            {
-                try
-                {
-
-                    var project = new List<PackageSummaries>();
-                    var folderName = Path.GetFileName(folder);
-                    var deps1 = FindPackageConfigDependencies(folder);
-                    var deps2 = FindProjectFilesDependencies(folder);
-
-                    var items = new List<IPackage>();
-                    var latestVersionsItems = new List<IPackage>();
-
-                    foreach (var dep1 in deps1)
-                    {
-                        var package = _nugetRepo.FindPackage(dep1.Id?.Trim(), dep1.Version);
-                        if (package != null)
-                        {
-                            var livePackages = _nugetRepo.FindPackagesById(dep1.Id?.Trim()).Where(x => x.IsLatestVersion == true).ToList();
-
-                            foreach (var version in livePackages)
-                            {
-                                if (dep1.Version != version.Version)
-                                {
-                                    latestVersionsItems.Add(version);
-                                }
-                            }
-
-                            Console.Write("+");
-                            items.Add(package);
-                        }
-                        else
-                        {
-                            Console.Write("!");
-                        }
-                    }
-
-                    foreach (var dep2 in deps2)
-                    {
-                        var package = _nugetRepo.FindPackage(dep2.Item1?.Trim(), dep2.Item2);
-                        if (package != null)
-                        {
-                            Console.Write("+");
-                            items.Add(package);
-                        }
-                        else
-                        {
-                            Console.Write("!");
-                        }
-                    }
-
-
-                    if (items.Any())
-                    {
-                        projects.Add(new PackageSummaries
-                        {
-                            Project = folderName,
-                            Packages = items.Distinct().OrderBy(x => x.Id).ToList(),
-                            LatestVersion = latestVersionsItems
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Folder \"{folder}\" threw an exception. Ex: {ex}");
-                }
-            }
+            GatherAPIData(projects, folders);
 
             // Apply search criteria
             foreach (var project in projects)
@@ -156,19 +90,90 @@ namespace NugetTree
             return projects;
         }
 
+        private void GatherAPIData(List<PackageSummaries> projects, IEnumerable<string> folders)
+        {
+            foreach (var folder in folders)
+            {
+                try
+                {
+
+                    var project = new List<PackageSummaries>();
+                    var folderName = Path.GetFileName(folder);
+                    var configDependencies = FindPackageConfigDependencies(folder);
+                    var filesDependencies = FindProjectFilesDependencies(folder);
+
+                    var items = new List<IPackage>();
+                    var latestVersionsItems = new List<IPackage>();
+
+                    foreach (var dep1 in configDependencies)
+                    {
+                        var package = _nugetRepo.FindPackage(dep1.Id?.Trim(), dep1.Version);
+                        if (package != null)
+                        {
+                            var livePackages = _nugetRepo.FindPackagesById(dep1.Id?.Trim()).Where(x => x.IsLatestVersion == true).ToList();
+
+                            foreach (var version in livePackages)
+                            {
+                                if (dep1.Version != version.Version)
+                                {
+                                    latestVersionsItems.Add(version);
+                                }
+                            }
+
+                            Console.Write("1");
+                            items.Add(package);
+                        }
+                        else
+                        {
+                            Console.Write("0");
+                        }
+                    }
+
+                    foreach (var dep2 in filesDependencies)
+                    {
+                        var package = _nugetRepo.FindPackage(dep2.Item1?.Trim(), dep2.Item2);
+                        if (package != null)
+                        {
+                            Console.Write("+");
+                            items.Add(package);
+                        }
+                        else
+                        {
+                            Console.Write("!");
+                        }
+                    }
+
+
+                    if (items.Any())
+                    {
+                        projects.Add(new PackageSummaries
+                        {
+                            Project = folderName,
+                            Packages = items.Distinct().OrderBy(x => x.Id).ToList(),
+                            LatestVersion = latestVersionsItems
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Folder \"{folder}\" threw an exception. Ex: {ex}");
+                }
+            }
+        }
+
         private List<PackageReference> FindPackageConfigDependencies(string folder)
         {
-            var capitaPackages = new List<PackageReference>();
+            var disPackages = new List<PackageReference>();
             var packageConfigFiles = Directory.EnumerateFiles(folder, "packages.config", SearchOption.AllDirectories);
 
             foreach (var packageConfig in packageConfigFiles)
             {
                 var packages = new PackageReferenceFile(packageConfig).GetPackageReferences();
 
-                capitaPackages.AddRange(packages);
+                disPackages.AddRange(packages);
             }
 
-            return capitaPackages.Distinct().ToList();
+            return disPackages.Distinct().ToList();
         }
 
         private List<Tuple<string, SemanticVersion>> FindProjectFilesDependencies(string folder)

@@ -10,45 +10,60 @@ namespace NugetTree
     {
         public static string DirectorExists(string repoFolder)
         {
-            if (!Directory.Exists(repoFolder))
+            if (!string.IsNullOrEmpty(repoFolder))
             {
-                //  Directory does not exist
-                FontColour.ColourChangeError($"This directory not found: \n {repoFolder} \n Please double check file path. \nPlease Double check that this program has read and write access to the directory.\n");
-                repoFolder = string.Empty;
-                Console.ReadKey();
+                if (!Directory.Exists(repoFolder))
+                {
+                    //  Directory does not exist
+                    FontColour.ColourChangeError($"This directory not found: \n {repoFolder} \n Please double check file path. \nPlease Double check that this program has read and write access to the directory.\n");
+                    repoFolder = string.Empty;
+                    Console.ReadKey();
+                }
             }
             return repoFolder;
         }
 
         public static string RegexExists(string frameworkVersion)
         {
-            var regex = @"^[0-9]{1,11}(?:\.[0-9]{1,3}(\.[0-9]{1,3})?)$";
-            var match = Regex.Match(frameworkVersion, regex);
-            if (!match.Success)
+            if (!string.IsNullOrEmpty(frameworkVersion))
             {
-                //  Does not match a .NET pattern
-                FontColour.ColourChangeError($"Not a valid .NET pattern - {frameworkVersion}");
-                frameworkVersion = string.Empty;
+                var regex = @"^[0-9]{1,11}(?:\.[0-9]{1,3}(\.[0-9]{1,3})?)$";
+                var match = Regex.Match(frameworkVersion, regex);
+                if (!match.Success)
+                {
+                    //  Does not match a .NET pattern
+                    FontColour.ColourChangeError($"Not a valid .NET pattern - {frameworkVersion}");
+                    frameworkVersion = string.Empty;
+                }
+                else
+                {
+                    // User in put framework version
+                    frameworkVersion = $".NETFramework,Version=v{frameworkVersion}";
+                }
+
+                return frameworkVersion;
             }
             else
             {
-                frameworkVersion = $".NETFramework,Version=v{frameworkVersion}";
+                // Use the latest framework if none specified
+                return frameworkVersion = $".NETFramework,Version=v4.7.2";
             }
-            return frameworkVersion;
         }
 
         public static string UriExists(string packageSourcePath)
         {
-            Uri uriResult;
-            bool result = Uri.TryCreate(packageSourcePath, UriKind.Absolute, out uriResult)
-                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-            if (!result)
+            if (!string.IsNullOrEmpty(packageSourcePath))
             {
-                //  does not match a .NET pattern
-                FontColour.ColourChangeError($"Not a valid package source path - {uriResult}");
-                packageSourcePath = string.Empty;
+                Uri uriResult;
+                bool result = Uri.TryCreate(packageSourcePath, UriKind.Absolute, out uriResult)
+                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                if (!result)
+                {
+                    //  does not match a .NET pattern
+                    FontColour.ColourChangeError($"Not a valid package source path - {uriResult}");
+                    packageSourcePath = string.Empty;
+                }
             }
-
             return packageSourcePath;
         }
     }
