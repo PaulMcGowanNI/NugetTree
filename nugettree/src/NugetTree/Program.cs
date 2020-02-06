@@ -2,25 +2,31 @@
 namespace NugetTree
 {
     using NuGet;
+    using NuGet.Protocol.Core.Types;
+    using NugetTree.ApiResource;
     using NugetTree.Font;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.Versioning;
-    class Program
+    public class Program
     {
+        public static UserInput _userInput;
+        public static ApiProperties _apiProperties;
+
         static void Main()
         {
+            _userInput = new UserInput();
+            _apiProperties = new ApiProperties();
+
             //--------------------------------------------------------------------------------------------------------------
             #region EnterRepository
 
-            var userInput = new UserInput();
-            var apiProperty = new ApiProperties();
             do
             {
-                userInput.RepoFolder = GetSolutionPath(userInput.RepoFolder);
+                _userInput.RepoFolder = GetSolutionPath(_userInput.RepoFolder);
 
-            } while (string.IsNullOrEmpty(userInput.RepoFolder));
+            } while (string.IsNullOrEmpty(_userInput.RepoFolder));
 
             #endregion EnterRepository
             //--------------------------------------------------------------------------------------------------------------
@@ -28,13 +34,13 @@ namespace NugetTree
 
             do
             {
-                userInput.TargetFramework = GetFrameworkVersion(userInput.TargetFramework);
-                if (!string.IsNullOrEmpty(userInput.TargetFramework))
+                _userInput.TargetFramework = GetFrameworkVersion(_userInput.TargetFramework);
+                if (!string.IsNullOrEmpty(_userInput.TargetFramework))
                 {
-                    apiProperty.FrameworkName = new FrameworkName(userInput.TargetFramework);
+                    _apiProperties.FrameworkName = new FrameworkName(_userInput.TargetFramework);
                 }
 
-            } while (string.IsNullOrEmpty(userInput.TargetFramework));
+            } while (string.IsNullOrEmpty(_userInput.TargetFramework));
 
             #endregion EnterFramework
             //--------------------------------------------------------------------------------------------------------------
@@ -42,40 +48,48 @@ namespace NugetTree
 
             do
             {
-                userInput.PackageSource = GetRepoPath(userInput.PackageSource);
-                if (!string.IsNullOrEmpty(userInput.PackageSource))
+                _userInput.PackageSource = GetRepoPath(_userInput.PackageSource);
+                if (string.IsNullOrEmpty(_userInput.PackageSource))
                 {
-                    apiProperty.NugetRepoFactory = PackageRepositoryFactory.Default.CreateRepository(userInput.PackageSource);
-                    apiProperty.Dependencies = new FindDependencies(userInput.RepoFolder, apiProperty.NugetRepoFactory).ListAll();
-                }
-                else
-                {
-                    // Use latest nuget source v3
-                    apiProperty.NugetPackageSource = new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json");
+                    if (_userInput.UseLatest)
+                    {
+                        // Use latest nuget source v3
+                        _userInput.PackageSource = "https://api.nuget.org/v3/index.json";
+                        _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
+                        _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties, _apiProperties.NugetNewFactory).ListAll();
+                    }
                 }
 
-            } while (string.IsNullOrEmpty(userInput.PackageSource && apiProperty.NugetPackageSource != null));
+            } while (string.IsNullOrEmpty(_userInput.PackageSource));
 
             #endregion EnterPackageSource
             //--------------------------------------------------------------------------------------------------------------
             #region Results
 
-            
-
-            foreach (var item in apiProperty.Dependencies)
+            foreach (var item in _apiProperties.Dependencies)
             {
                 Console.WriteLine();
                 Console.WriteLine("--------------------------------------");
                 Console.WriteLine(item.Project);
 
-                OutputGraph(apiProperty.NugetRepoFactory, item.Packages, apiProperty.FrameworkName, item.LatestVersion, 0);
+                if (_apiProperties.NugetPackageSource != null)
+                {
+                    NewOutputGraph(_apiProperties.NugetNewFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
+                }
+                else
+                {
+                    _apiProperties.NugetOldFactory = PackageRepositoryFactory.Default.CreateRepository(_userInput.PackageSource);
+                    _apiProperties.Dependencies = new FindDependencies(_userInput.RepoFolder, _apiProperties.NugetOldFactory).ListAll();
+                    OutputGraph(_apiProperties.NugetOldFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
+                }
+
             }
 
             Console.WriteLine("Press any key to exit");
             Console.ReadKey();
 
             #endregion Results
-
+            //--------------------------------------------------------------------------------------------------------------
         }
 
         private static string GetSolutionPath(string repoFolder)
@@ -92,6 +106,7 @@ namespace NugetTree
 
         private static string GetRepoPath(string packageSource)
         {
+            _userInput.UseLatest = true;
             FontColour.ColourChangeDisplay("----------------------");
             Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org V3");
             Console.WriteLine("----------------------");
@@ -99,8 +114,19 @@ namespace NugetTree
             FontColour.ColourChangeResult();
             packageSource = Console.ReadLine();
 
-            packageSource = Validation.UriExists(packageSource);
+            if (string.IsNullOrEmpty(packageSource))
+            {
+                packageSource = Validation.UriExists(packageSource);
+            }
+
+            if (packageSource == "Error")
+            {
+                _userInput.UseLatest = false;
+                packageSource = string.Empty;
+            }
+
             Console.WriteLine(packageSource);
+
             return packageSource;
         }
 
@@ -164,6 +190,10 @@ namespace NugetTree
                     OutputGraph(repository, dependentPackages, targetFramework, latestVersion, depth + 3);
                 }
             }
+        }
+        static void NewOutputGraph(IPackageSearchMetadata nugetOldFactory, List<IPackage> packages, FrameworkName frameworkName, List<IPackage> latestVersion, int v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

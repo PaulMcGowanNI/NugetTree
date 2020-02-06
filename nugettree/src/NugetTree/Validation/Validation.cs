@@ -33,6 +33,7 @@ namespace NugetTree
                 {
                     //  Does not match a .NET pattern
                     FontColour.ColourChangeError($"Not a valid .NET pattern - {frameworkVersion}");
+                    Console.ReadKey();
                     frameworkVersion = string.Empty;
                 }
                 else
@@ -52,18 +53,17 @@ namespace NugetTree
 
         public static string UriExists(string packageSourcePath)
         {
-            if (!string.IsNullOrEmpty(packageSourcePath))
+            Uri uriResult;
+            bool result = Uri.TryCreate(packageSourcePath, UriKind.Absolute, out uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            if (!result)
             {
-                Uri uriResult;
-                bool result = Uri.TryCreate(packageSourcePath, UriKind.Absolute, out uriResult)
-                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-                if (!result)
-                {
-                    //  does not match a .NET pattern
-                    FontColour.ColourChangeError($"Not a valid package source path - {uriResult}");
-                    packageSourcePath = string.Empty;
-                }
+                //  does not match a .NET pattern
+                FontColour.ColourChangeError($"Not a valid package source path - {uriResult}");
+                Console.ReadKey();
+                packageSourcePath = "Error";
             }
+
             return packageSourcePath;
         }
     }
