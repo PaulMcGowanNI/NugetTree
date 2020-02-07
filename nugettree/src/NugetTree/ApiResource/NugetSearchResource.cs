@@ -3,6 +3,8 @@ namespace NugetTree.ApiResource
 {
     using NuGet.Protocol.Core.Types;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
 
     public class NugetSearchResource
     {
@@ -16,20 +18,22 @@ namespace NugetTree.ApiResource
             _apiProperties = apiProperties;
         }
 
-        public void NewPackagePath()
-        {
-            // Use latest nuget source v3
-            _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource("https://api.nuget.org/v3/index.json");
-        }
-
         public List<PackageSummaries> ListAll()
         {
-            return Search(true);
+            return SearchDependency(true);
         }
 
-        private List<PackageSummaries> Search(bool showEmptyResults)
+        private List<PackageSummaries> SearchDependency(bool showEmptyResults)
         {
-            return new List<PackageSummaries>();
+            var package = new List<PackageSummaries>();
+            var folders = Directory.EnumerateDirectories(_userInput.RepoFolder).Where(f => !f.StartsWith("."));
+
+            if (!folders.Any(f => !f.EndsWith("\\bin") && !f.EndsWith("\\obj")))
+            {
+                folders = new[] { _userInput.RepoFolder };
+            }
+
+            return package;
         }
     }
 }

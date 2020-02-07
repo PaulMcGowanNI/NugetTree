@@ -9,6 +9,7 @@ namespace NugetTree
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.Versioning;
+
     public class Program
     {
         public static UserInput _userInput;
@@ -49,15 +50,17 @@ namespace NugetTree
             do
             {
                 _userInput.PackageSource = GetRepoPath(_userInput.PackageSource);
-                if (string.IsNullOrEmpty(_userInput.PackageSource))
+
+                if (_userInput.UseLatest)
                 {
-                    if (_userInput.UseLatest)
-                    {
-                        // Use latest nuget source v3
-                        _userInput.PackageSource = "https://api.nuget.org/v3/index.json";
-                        _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
-                        _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties, _apiProperties.NugetNewFactory).ListAll();
-                    }
+                    // Use latest nuget source v3 // https://www.nuget.org/api/v2/
+                    _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
+                    _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties, _apiProperties.NugetNewFactory).ListAll();
+                }
+                else
+                {
+                    _apiProperties.NugetOldFactory = PackageRepositoryFactory.Default.CreateRepository(_userInput.PackageSource);
+                    _apiProperties.Dependencies = new FindDependencies(_userInput.RepoFolder, _apiProperties.NugetOldFactory).ListAll();
                 }
 
             } while (string.IsNullOrEmpty(_userInput.PackageSource));
@@ -78,8 +81,6 @@ namespace NugetTree
                 }
                 else
                 {
-                    _apiProperties.NugetOldFactory = PackageRepositoryFactory.Default.CreateRepository(_userInput.PackageSource);
-                    _apiProperties.Dependencies = new FindDependencies(_userInput.RepoFolder, _apiProperties.NugetOldFactory).ListAll();
                     OutputGraph(_apiProperties.NugetOldFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
                 }
 
@@ -106,7 +107,7 @@ namespace NugetTree
 
         private static string GetRepoPath(string packageSource)
         {
-            _userInput.UseLatest = true;
+            _userInput.UseLatest = false;
             FontColour.ColourChangeDisplay("----------------------");
             Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org V3");
             Console.WriteLine("----------------------");
@@ -114,18 +115,21 @@ namespace NugetTree
             FontColour.ColourChangeResult();
             packageSource = Console.ReadLine();
 
+            // If blank use defualt V3 package source
             if (string.IsNullOrEmpty(packageSource))
             {
-                packageSource = Validation.UriExists(packageSource);
+                _userInput.UseLatest = true;
+                packageSource = "https://api.nuget.org/v3/index.json";
+                Console.WriteLine(packageSource);
             }
-
-            if (packageSource == "Error")
+            else
             {
-                _userInput.UseLatest = false;
-                packageSource = string.Empty;
+                packageSource = Validation.UriExists(packageSource);
+                if (packageSource == "Error")
+                {
+                    packageSource = string.Empty;
+                }
             }
-
-            Console.WriteLine(packageSource);
 
             return packageSource;
         }

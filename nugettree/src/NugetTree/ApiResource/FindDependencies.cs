@@ -1,12 +1,13 @@
-﻿using NuGet;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml;
-
+﻿
 namespace NugetTree
 {
+    using NuGet;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Xml;
+
     public class FindDependencies
     {
         private readonly string _localFolderPath;
@@ -96,7 +97,6 @@ namespace NugetTree
             {
                 try
                 {
-
                     var project = new List<PackageSummaries>();
                     var folderName = Path.GetFileName(folder);
                     var configDependencies = FindPackageConfigDependencies(folder);
