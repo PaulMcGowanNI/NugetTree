@@ -53,12 +53,13 @@ namespace NugetTree
 
                 if (_userInput.UseLatest)
                 {
-                    // Use latest nuget source v3 // https://www.nuget.org/api/v2/
+                    // Use latest nuget source v3 // 
                     _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
                     _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties, _apiProperties.NugetNewFactory).ListAll();
                 }
                 else
                 {
+                    // https://www.nuget.org/api/v2/
                     _apiProperties.NugetOldFactory = PackageRepositoryFactory.Default.CreateRepository(_userInput.PackageSource);
                     _apiProperties.Dependencies = new FindDependencies(_userInput.RepoFolder, _apiProperties.NugetOldFactory).ListAll();
                 }
@@ -115,11 +116,11 @@ namespace NugetTree
             FontColour.ColourChangeResult();
             packageSource = Console.ReadLine();
 
-            // If blank use defualt V3 package source
+            // If blank use default V3 package source
             if (string.IsNullOrEmpty(packageSource))
             {
-                _userInput.UseLatest = true;
                 packageSource = "https://api.nuget.org/v3/index.json";
+                _userInput.UseLatest = true;
                 Console.WriteLine(packageSource);
             }
             else

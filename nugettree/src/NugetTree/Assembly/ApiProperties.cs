@@ -5,6 +5,7 @@ namespace NugetTree
     using NuGet.Protocol.Core.Types;
     using System.Collections.Generic;
     using System.Runtime.Versioning;
+
     public class ApiProperties
     {
         public FrameworkName FrameworkName { get; set; } = null;

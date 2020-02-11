@@ -99,8 +99,8 @@ namespace NugetTree
                 {
                     var project = new List<PackageSummaries>();
                     var folderName = Path.GetFileName(folder);
-                    var configDependencies = FindPackageConfigDependencies(folder);
-                    var filesDependencies = FindProjectFilesDependencies(folder);
+                    var configDependencies = PackageConfiguration.FindPackageConfigDependencies(folder);
+                    var filesDependencies = PackageConfiguration.FindProjectFilesDependencies(folder);
 
                     var items = new List<IPackage>();
                     var latestVersionsItems = new List<IPackage>();
@@ -159,46 +159,6 @@ namespace NugetTree
                     Console.WriteLine($"Folder \"{folder}\" threw an exception. Ex: {ex}");
                 }
             }
-        }
-
-        private List<PackageReference> FindPackageConfigDependencies(string folder)
-        {
-            var disPackages = new List<PackageReference>();
-            var packageConfigFiles = Directory.EnumerateFiles(folder, "packages.config", SearchOption.AllDirectories);
-
-            foreach (var packageConfig in packageConfigFiles)
-            {
-                var packages = new PackageReferenceFile(packageConfig).GetPackageReferences();
-
-                disPackages.AddRange(packages);
-            }
-
-            return disPackages.Distinct().ToList();
-        }
-
-        private List<Tuple<string, SemanticVersion>> FindProjectFilesDependencies(string folder)
-        {
-            var nugetReferences = new List<Tuple<string, SemanticVersion>>();
-            var projectFiles = Directory.EnumerateFiles(folder, "*.csproj", SearchOption.AllDirectories);
-
-            foreach (var projectFile in projectFiles)
-            {
-                try
-                {
-                    var xmldoc = new XmlDocument();
-                    xmldoc.Load(projectFile);
-
-                    foreach (XmlNode item in xmldoc.SelectNodes("/Project/ItemGroup/PackageReference"))
-                    {
-                        nugetReferences.Add(new Tuple<string, SemanticVersion>(item.Attributes["Include"].Value.ToString(), new SemanticVersion(item.Attributes["Version"].Value.ToString())));
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            return nugetReferences.ToList();
         }
     }
 }
