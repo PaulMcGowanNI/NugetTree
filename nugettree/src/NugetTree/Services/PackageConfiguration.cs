@@ -40,7 +40,7 @@ namespace NugetTree
                     var xmldoc = new XmlDocument();
                     xmldoc.Load(projectFile);
 
-                    foreach (XmlNode item in xmldoc.SelectNodes("/Project/ItemGroup"))
+                    foreach (XmlNode item in xmldoc.SelectNodes("/Project/ItemGroup/PackageReference"))
                     {
                         nugetReferences.Add(new Tuple<string, SemanticVersion>(item.Attributes["Include"].Value.ToString(), new SemanticVersion(item.Attributes["Version"].Value.ToString())));
                     }
