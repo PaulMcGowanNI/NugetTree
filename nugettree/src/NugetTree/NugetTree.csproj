@@ -60,11 +60,8 @@
     <Reference Include="NuGet.Packaging, Version=5.4.0.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\NuGet.Packaging.5.4.0\lib\netstandard2.0\NuGet.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="NuGet.Packaging.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\NuGet.Packaging.Core.4.2.0\lib\net45\NuGet.Packaging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Packaging.Core.Types, Version=4.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\NuGet.Packaging.Core.Types.4.2.0\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
+    <Reference Include="NuGet.Packaging.Core, Version=5.4.0.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\NuGet.Packaging.Core.5.4.0\lib\netstandard2.0\NuGet.Packaging.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Protocol, Version=5.4.0.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\NuGet.Protocol.5.4.0\lib\netstandard2.0\NuGet.Protocol.dll</HintPath>

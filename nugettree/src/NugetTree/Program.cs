@@ -55,7 +55,7 @@ namespace NugetTree
                 {
                     // Use latest nuget source v3 // 
                     _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
-                    _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties, _apiProperties.NugetNewFactory).ListAll();
+                    _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties).ListAll();
                 }
                 else
                 {

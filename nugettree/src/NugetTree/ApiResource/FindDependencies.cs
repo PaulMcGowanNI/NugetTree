@@ -6,7 +6,6 @@ namespace NugetTree
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Xml;
 
     public class FindDependencies
     {
@@ -99,6 +98,7 @@ namespace NugetTree
                 {
                     var project = new List<PackageSummaries>();
                     var folderName = Path.GetFileName(folder);
+
                     var configDependencies = PackageConfiguration.FindPackageConfigDependencies(folder);
                     var filesDependencies = PackageConfiguration.FindProjectFilesDependencies(folder);
 
