@@ -2,8 +2,8 @@
 namespace NugetTree.ApiResource
 {
     using NuGet;
-    using NuGet.Packaging.Core;
     using NuGet.Protocol.Core.Types;
+    using NugetTree.Assembly;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -34,23 +34,26 @@ namespace NugetTree.ApiResource
                 solutionFolders = new[] { _userInput.RepoFolder };
             }
 
-            GatherAPIData(solutionFolders);
+            var apiDataResults = GatherAPIData(solutionFolders);
+
+
 
             return new List<PackageSummaries>();
         }
 
-        private void GatherAPIData(IEnumerable<string> solutionFolders)
+        private List<PackageSummaries> GatherAPIData(IEnumerable<string> solutionFolders)
         {
+            var projects = new List<PackageSummaries>();
             foreach (var folder in solutionFolders)
             {
                 try
                 {
                     var folderName = Path.GetFileName(folder);
+                    var latestVersionNumber = new List<IPackageSearchMetadata>();
+                    var currentPackage = new List<LocalPackageDetails>();
+                    List<PackageReference> deps1 = PackageConfiguration.FindPackageConfigDependencies(folder);
 
-                    List<PackageReference> localPackages = PackageConfiguration.FindPackageConfigDependencies(folder);
-                    List<Tuple<string, SemanticVersion>> currentPackages = PackageConfiguration.FindProjectFilesDependencies(folder);
-
-                    foreach (var current in localPackages)
+                    foreach (var current in deps1)
                     {
                         //--------------------------
                         IEnumerable<IPackageSearchMetadata> ExactsearchMetadata = PackageConfiguration.GetPackageVersions(current, _apiProperties.NugetPackageSource);
@@ -62,29 +65,44 @@ namespace NugetTree.ApiResource
 
                             if (current.Version.ToString() != latestPackage.Identity.Version.ToString())
                             {
-
+                                // Package is not the latest version. Add the latest version to a list
+                                latestVersionNumber.Add(latestPackage);
                             }
 
+                            Console.WriteLine("+");
+                            currentPackage.Add(new LocalPackageDetails { Id = current.Id,
+                                                                        Version = current.Version});
                         }
-                        //--------------------------
-
+                        else
+                        {
+                            Console.Write("!");
+                        }
                     }
 
-                    //if (livePackage.Any())
-                    //{
-                    //    projects.Add(new PackageSummaries
-                    //    {
-                    //        Project = folderName,
-                    //        Packages = items.Distinct().OrderBy(x => x.Id).ToList(),
-                    //        LatestVersion = latestVersionsItems
-                    //    });
-                    //}
+                    if (currentPackage.Any())
+                    {
+                        projects.Add(new PackageSummaries
+                        {
+                            Project = folderName,
+                            LocalVersionMetaData = currentPackage.Distinct().OrderBy(x => x.Id).ToList(),
+                            LatestVersionMetaData = latestVersionNumber
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Folder \"{folder}\" threw an exception. Ex: {ex}");
                 }
             }
+
+            SearchCriteria(projects);
+
+            return projects;
+        }
+
+        private bool SearchCriteria(List<PackageSummaries> projects)
+        {
+            throw new NotImplementedException();
         }
     }
 }

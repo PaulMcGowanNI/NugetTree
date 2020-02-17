@@ -20,6 +20,7 @@ namespace NugetTree
                     Console.ReadKey();
                 }
             }
+            Console.Clear();
             return repoFolder;
         }
 

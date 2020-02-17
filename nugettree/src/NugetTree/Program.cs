@@ -96,9 +96,9 @@ namespace NugetTree
 
         private static string GetSolutionPath(string repoFolder)
         {
-            FontColour.ColourChangeDisplay("----------------------");
+            FontColour.ColourChangeDisplay("-----------------------------------");
             Console.WriteLine("Enter a project solution path");
-            Console.WriteLine("----------------------");
+            Console.WriteLine("-----------------------------------");
 
             FontColour.ColourChangeResult();
             repoFolder = Console.ReadLine();
@@ -109,9 +109,9 @@ namespace NugetTree
         private static string GetRepoPath(string packageSource)
         {
             _userInput.UseLatest = false;
-            FontColour.ColourChangeDisplay("----------------------");
+            FontColour.ColourChangeDisplay("-----------------------------------");
             Console.WriteLine("Enter a package source URL. Otherwise ENTER to continue to use nuget.org V3");
-            Console.WriteLine("----------------------");
+            Console.WriteLine("-----------------------------------");
 
             FontColour.ColourChangeResult();
             packageSource = Console.ReadLine();
@@ -137,15 +137,15 @@ namespace NugetTree
 
         private static string GetFrameworkVersion(string targetFramework)
         {
-            FontColour.ColourChangeDisplay("----------------------");
+            FontColour.ColourChangeDisplay("-----------------------------------");
             Console.WriteLine("Enter a .NET Framework version number");
-            Console.WriteLine("----------------------");
+            Console.WriteLine("-----------------------------------");
 
             FontColour.ColourChangeResult();
             targetFramework = Console.ReadLine();
 
             targetFramework = Validation.RegexExists(targetFramework);
-            Console.WriteLine(targetFramework);
+            Console.WriteLine($"{targetFramework} \r\n");
             return targetFramework;
         }
 

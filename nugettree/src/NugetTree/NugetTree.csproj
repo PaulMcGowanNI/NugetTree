@@ -103,6 +103,7 @@
     <Compile Include="ApiResource\NugetSearchResource.cs" />
     <Compile Include="Assembly\ApiProperties.cs" />
     <Compile Include="ApiResource\FindDependencies.cs" />
+    <Compile Include="Assembly\LocalPackageDetails.cs" />
     <Compile Include="Font\FontColour.cs" />
     <Compile Include="Assembly\PackageSummaries.cs" />
     <Compile Include="Program.cs" />
