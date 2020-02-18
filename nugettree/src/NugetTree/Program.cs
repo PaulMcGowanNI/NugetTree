@@ -2,12 +2,10 @@
 namespace NugetTree
 {
     using NuGet;
-    using NuGet.Protocol.Core.Types;
     using NugetTree.ApiResource;
     using NugetTree.Font;
+    using NugetTree.Output;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Runtime.Versioning;
 
     public class Program
@@ -72,17 +70,18 @@ namespace NugetTree
 
             foreach (var item in _apiProperties.Dependencies)
             {
-                Console.WriteLine();
+                FontColour.ColourChangeDisplay($"{Environment.NewLine}--------------------------------------");
+                Console.WriteLine($"Project Name - {item.Project}");
                 Console.WriteLine("--------------------------------------");
-                Console.WriteLine(item.Project);
 
+                OutputGraph op = new OutputGraph();
                 if (_apiProperties.NugetPackageSource != null)
                 {
-                    NewOutputGraph(_apiProperties.NugetNewFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
+                    op.OutputV3Graph(item.LocalVersionMetaData, _apiProperties.FrameworkName, item.LatestVersionMetaData, 0);
                 }
                 else
                 {
-                    OutputGraph(_apiProperties.NugetOldFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
+                    op.OutputV2Graph(_apiProperties.NugetOldFactory, item.Packages, _apiProperties.FrameworkName, item.LatestVersion, 0);
                 }
 
             }
@@ -94,6 +93,7 @@ namespace NugetTree
             //--------------------------------------------------------------------------------------------------------------
         }
 
+        //--------------------------------------------------------------------------------------------------------------
         private static string GetSolutionPath(string repoFolder)
         {
             FontColour.ColourChangeDisplay("-----------------------------------");
@@ -105,7 +105,7 @@ namespace NugetTree
 
             return Validation.DirectorExists(repoFolder);
         }
-
+        //--------------------------------------------------------------------------------------------------------------
         private static string GetRepoPath(string packageSource)
         {
             _userInput.UseLatest = false;
@@ -134,7 +134,7 @@ namespace NugetTree
 
             return packageSource;
         }
-
+        //--------------------------------------------------------------------------------------------------------------
         private static string GetFrameworkVersion(string targetFramework)
         {
             FontColour.ColourChangeDisplay("-----------------------------------");
@@ -146,59 +146,11 @@ namespace NugetTree
 
             targetFramework = Validation.RegexExists(targetFramework);
             Console.WriteLine($"{targetFramework} \r\n");
+            Console.ReadLine();
+            Console.Clear();
+
             return targetFramework;
         }
-
-        static void OutputGraph(IPackageRepository repository, IEnumerable<IPackage> packages, FrameworkName targetFramework, List<IPackage> latestVersion, int depth)
-        {
-            foreach (IPackage package in packages)
-            {
-                if (latestVersion.Any(x => x.Id == package.Id) && package.IsLatestVersion == false)
-                {
-                    foreach (var list in latestVersion.Where(x => x.Id == package.Id))
-                    {
-                        FontColour.NugetColor(list.Version);
-                        Console.WriteLine($"{new string(' ', depth)}{package.Id} v{package.Version} | Latest Package:{package.IsLatestVersion} | {list.Id} v{list.Version}");
-                        FontColour.NormalColor();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"{new string(' ', depth)}{package.Id} v{package.Version} Latest Package:{package.IsLatestVersion}");
-                }
-
-
-                IList<IPackage> dependentPackages = new List<IPackage>();
-
-                var matchingPackageDependencySets = package.DependencySets.Where(x => x.SupportedFrameworks.Any(y => y.Identifier == targetFramework.Identifier && y.Version <= targetFramework.Version));
-
-                PackageDependencySet chosenDependencySet = null;
-                foreach (var match in matchingPackageDependencySets)
-                {
-                    if (chosenDependencySet == null || (chosenDependencySet.SupportedFrameworks.Any(x => x.Version > match.SupportedFrameworks.OrderByDescending(v => v.Version).Select(z => z.Version).First())))
-                    {
-                        chosenDependencySet = match;
-                    }
-                }
-
-                if (chosenDependencySet != null && chosenDependencySet.Dependencies.Any())
-                {
-                    foreach (var dependency in chosenDependencySet.Dependencies.OrderBy(x => x.Id))
-                    {
-                        var dependentPackage = repository.FindPackage(dependency.Id, dependency.VersionSpec, true, true);
-                        if (dependentPackage != null)
-                        {
-                            dependentPackages.Add(dependentPackage);
-                        }
-                    }
-
-                    OutputGraph(repository, dependentPackages, targetFramework, latestVersion, depth + 3);
-                }
-            }
-        }
-        static void NewOutputGraph(IPackageSearchMetadata nugetOldFactory, List<IPackage> packages, FrameworkName frameworkName, List<IPackage> latestVersion, int v)
-        {
-            throw new NotImplementedException();
-        }
+        //--------------------------------------------------------------------------------------------------------------
     }
 }

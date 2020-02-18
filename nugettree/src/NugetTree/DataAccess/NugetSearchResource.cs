@@ -34,11 +34,7 @@ namespace NugetTree.ApiResource
                 solutionFolders = new[] { _userInput.RepoFolder };
             }
 
-            var apiDataResults = GatherAPIData(solutionFolders);
-
-
-
-            return new List<PackageSummaries>();
+            return GatherAPIData(solutionFolders);
         }
 
         private List<PackageSummaries> GatherAPIData(IEnumerable<string> solutionFolders)
@@ -48,6 +44,7 @@ namespace NugetTree.ApiResource
             {
                 try
                 {
+                    var isLatestPackageVersin = true;
                     var folderName = Path.GetFileName(folder);
                     var latestVersionNumber = new List<IPackageSearchMetadata>();
                     var currentPackage = new List<LocalPackageDetails>();
@@ -55,11 +52,12 @@ namespace NugetTree.ApiResource
 
                     foreach (var current in deps1)
                     {
-                        //--------------------------
+                        // Get nuget.org live package versions
                         IEnumerable<IPackageSearchMetadata> ExactsearchMetadata = PackageConfiguration.GetPackageVersions(current, _apiProperties.NugetPackageSource);
 
                         if (ExactsearchMetadata.Any())
                         {
+                            // Get nuget.org latest package version
                             var latestPackage = ExactsearchMetadata.OrderByDescending(x => x.Identity.Version)
                                .FirstOrDefault();
 
@@ -67,11 +65,16 @@ namespace NugetTree.ApiResource
                             {
                                 // Package is not the latest version. Add the latest version to a list
                                 latestVersionNumber.Add(latestPackage);
+                                isLatestPackageVersin = false;
                             }
 
-                            Console.WriteLine("+");
-                            currentPackage.Add(new LocalPackageDetails { Id = current.Id,
-                                                                        Version = current.Version});
+                            Console.Write("+");
+                            currentPackage.Add(new LocalPackageDetails
+                            {
+                                Id = current.Id,
+                                Version = current.Version,
+                                IsLatestVersion = isLatestPackageVersin
+                            });
                         }
                         else
                         {
@@ -94,15 +97,7 @@ namespace NugetTree.ApiResource
                     Console.WriteLine($"Folder \"{folder}\" threw an exception. Ex: {ex}");
                 }
             }
-
-            SearchCriteria(projects);
-
             return projects;
-        }
-
-        private bool SearchCriteria(List<PackageSummaries> projects)
-        {
-            throw new NotImplementedException();
         }
     }
 }

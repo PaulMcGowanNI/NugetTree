@@ -6,5 +6,6 @@ namespace NugetTree.Assembly
     {
         public string Id { get; set; }
         public SemanticVersion Version { get; set; }
+        public bool IsLatestVersion { get; set; }
     }
 }

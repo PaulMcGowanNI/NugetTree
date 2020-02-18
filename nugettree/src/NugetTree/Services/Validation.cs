@@ -40,7 +40,7 @@ namespace NugetTree
                 else
                 {
                     // User in put framework version
-                    frameworkVersion = $".NETFramework,Version=v{frameworkVersion}";
+                    frameworkVersion = $".NETFramework, Version=v{frameworkVersion}";
                 }
 
                 return frameworkVersion;
@@ -48,7 +48,7 @@ namespace NugetTree
             else
             {
                 // Use the latest framework if none specified
-                return frameworkVersion = $".NETFramework,Version=v4.7.2";
+                return frameworkVersion = $".NETFramework, Version=v4.7.2";
             }
         }
 

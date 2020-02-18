@@ -100,15 +100,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiResource\NugetSearchResource.cs" />
-    <Compile Include="Assembly\ApiProperties.cs" />
-    <Compile Include="ApiResource\FindDependencies.cs" />
-    <Compile Include="Assembly\LocalPackageDetails.cs" />
+    <Compile Include="DataAccess\NugetSearchResource.cs" />
+    <Compile Include="Models\ApiProperties.cs" />
+    <Compile Include="DataAccess\FindDependencies.cs" />
+    <Compile Include="Models\LocalPackageDetails.cs" />
     <Compile Include="Font\FontColour.cs" />
-    <Compile Include="Assembly\PackageSummaries.cs" />
+    <Compile Include="Models\PackageSummaries.cs" />
+    <Compile Include="Output\OutputGraph.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Assembly\UserInput.cs" />
+    <Compile Include="Models\UserInput.cs" />
     <Compile Include="Services\PackageConfiguration.cs" />
     <Compile Include="Services\Logger.cs" />
     <Compile Include="Services\Validation.cs" />

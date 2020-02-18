@@ -38,6 +38,7 @@ namespace NugetTree
                 folders = new[] { _localFolderPath };
             }
 
+
             GatherAPIData(projects, folders);
 
             // Apply search criteria
@@ -120,12 +121,12 @@ namespace NugetTree
                                 }
                             }
 
-                            Console.Write("1");
+                            Console.Write("+");
                             items.Add(package);
                         }
                         else
                         {
-                            Console.Write("0");
+                            Console.Write("!");
                         }
                     }
 

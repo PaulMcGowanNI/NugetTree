@@ -55,7 +55,6 @@ namespace NugetTree.Services
 
         public void LogInformation(string data)
         {
-            //Console.WriteLine(data);
             _ILog.Info(data);
         }
 
