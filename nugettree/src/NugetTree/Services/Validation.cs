@@ -60,7 +60,7 @@ namespace NugetTree
             if (!result)
             {
                 //  does not match a .NET pattern
-                FontColour.ColourChangeError($"Not a valid package source path - {uriResult}");
+                FontColour.ColourChangeError($"Not a valid package source path - {packageSourcePath}");
                 Console.ReadKey();
                 packageSourcePath = "Error";
             }

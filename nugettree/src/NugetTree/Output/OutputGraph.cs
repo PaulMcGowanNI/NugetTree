@@ -25,6 +25,11 @@ namespace NugetTree.Output
                         FontColour.NormalColor();
                     }
                 }
+                else
+                {
+                    FontColour.NugetColor(package.Version);
+                    Console.WriteLine($"{new string(' ', depth)}{package.Id} v{package.Version} | Latest Package:{package.IsLatestVersion}");
+                }
             }
         }
 

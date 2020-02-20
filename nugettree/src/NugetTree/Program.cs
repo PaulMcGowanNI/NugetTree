@@ -55,11 +55,16 @@ namespace NugetTree
                     _apiProperties.NugetPackageSource = new NuGet.Configuration.PackageSource(_userInput.PackageSource);
                     _apiProperties.Dependencies = new NugetSearchResource(_userInput, _apiProperties).ListAll();
                 }
-                else
+                else if(_userInput.PackageSource != "Error")
                 {
                     // https://www.nuget.org/api/v2/
                     _apiProperties.NugetOldFactory = PackageRepositoryFactory.Default.CreateRepository(_userInput.PackageSource);
                     _apiProperties.Dependencies = new FindDependencies(_userInput.RepoFolder, _apiProperties.NugetOldFactory).ListAll();
+                }
+                else
+                {
+                    _userInput.PackageSource = string.Empty;
+                    Console.Clear();
                 }
 
             } while (string.IsNullOrEmpty(_userInput.PackageSource));
@@ -71,7 +76,7 @@ namespace NugetTree
             foreach (var item in _apiProperties.Dependencies)
             {
                 FontColour.ColourChangeDisplay($"{Environment.NewLine}--------------------------------------");
-                Console.WriteLine($"Project Name - {item.Project}");
+                Console.WriteLine($"Project Folder - {item.Project}");
                 Console.WriteLine("--------------------------------------");
 
                 OutputGraph op = new OutputGraph();
@@ -88,6 +93,7 @@ namespace NugetTree
 
             Console.WriteLine("Press any key to exit");
             Console.ReadKey();
+            Console.ReadLine();
 
             #endregion Results
             //--------------------------------------------------------------------------------------------------------------
@@ -126,10 +132,6 @@ namespace NugetTree
             else
             {
                 packageSource = Validation.UriExists(packageSource);
-                if (packageSource == "Error")
-                {
-                    packageSource = string.Empty;
-                }
             }
 
             return packageSource;

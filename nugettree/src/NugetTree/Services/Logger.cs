@@ -12,7 +12,7 @@ namespace NugetTree.Services
 
         public Logger()
         {
-            _ILog = log4net.LogManager.GetLogger(typeof(Logger));
+            _ILog = LogManager.GetLogger(typeof(Logger));
         }
         public void Log(LogLevel level, string data)
         {

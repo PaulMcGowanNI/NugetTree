@@ -52,6 +52,7 @@ namespace NugetTree.ApiResource
 
                     foreach (var current in deps1)
                     {
+                        isLatestPackageVersin = true;
                         // Get nuget.org live package versions
                         IEnumerable<IPackageSearchMetadata> ExactsearchMetadata = PackageConfiguration.GetPackageVersions(current, _apiProperties.NugetPackageSource);
 
@@ -76,10 +77,10 @@ namespace NugetTree.ApiResource
                                 IsLatestVersion = isLatestPackageVersin
                             });
                         }
-                        else
-                        {
-                            Console.Write("!");
-                        }
+                        //else
+                        //{
+                        //    Console.Write("!");
+                        //}
                     }
 
                     if (currentPackage.Any())

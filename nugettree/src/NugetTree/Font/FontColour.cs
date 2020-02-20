@@ -24,7 +24,7 @@ namespace NugetTree.Font
 
         public static NuGet.SemanticVersion NugetColor(NuGet.SemanticVersion version)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.Gray;
             return version;
         }
 
